@@ -263,14 +263,19 @@ extension ActionCableClient {
     internal func unsubscribe(_ channel: Channel) {
         do {
           try self.transmit(on: channel, as: Command.unsubscribe)
-            
-            let message = Message(channelName: channel.name,
-                                   actionName: nil,
-                                  messageType: MessageType.cancelSubscription,
-                                         data: nil,
-                                        error: nil)
-            
-            onMessage(message)
+          
+              [Message(channelName: channel.name,
+                       actionName: nil,
+                       messageType: MessageType.cancelSubscription,
+                       data: nil,
+                       error: nil),
+               Message(channelName: channel.name,
+                       actionName: nil,
+                       messageType: MessageType.rejectSubscription,
+                       data: nil,
+                       error: nil)]
+                .forEach {message in onMessage(message)}
+          
         } catch {
             // There is a chance here the server could be down or not connected.
             // However, at this point the client will need to reconnect anyways
