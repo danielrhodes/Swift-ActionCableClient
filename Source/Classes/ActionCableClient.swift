@@ -71,17 +71,7 @@ open class ActionCableClient {
     //MARK: Properties
     open var isConnected : Bool { return socket.isConnected }
     open var url: Foundation.URL { return socket.currentURL }
-    
-    open var headers : [String: String] {
-        get { return socket.headers }
-        set { socket.headers = newValue }
-    }
-    
-    open var origin : String? {
-        get { return socket.origin }
-        set { socket.origin = newValue }
-    }
-  
+
     /// Initialize an ActionCableClient.
     ///
     /// Each client represents one connection to the server.
@@ -91,9 +81,19 @@ open class ActionCableClient {
     ///  ```swift
     ///  let client = ActionCableClient(URL: NSURL(string: "ws://localhost:3000/cable")!)
     ///  ```
-    public required init(url: URL) {
+    public required init(url: URL, headers: [String: String]? = nil, origin : String? = nil) {
         /// Setup Initialize Socket
-        socket = WebSocket(url: url)
+        var request = URLRequest(url: url)
+
+        if let origin = origin {
+            request.setValue(origin, forHTTPHeaderField: "Origin")
+        }
+
+        for (field, value) in headers ?? [:] {
+            request.setValue(value, forHTTPHeaderField: field)
+        }
+
+        socket = WebSocket(request: request)
         setupWebSocket()
     }
     
@@ -303,7 +303,7 @@ extension ActionCableClient {
 extension ActionCableClient {
     
     fileprivate func setupWebSocket() {
-        self.socket.onConnect    = { [weak self] in self!.didConnect() }
+        self.socket.onConnect    = { [weak self] in self!.didConnect() } as (() -> Void)
         self.socket.onDisconnect = { [weak self] (error: Swift.Error?) in self!.didDisconnect(error) }
         self.socket.onText       = { [weak self] (text: String) in self!.onText(text) }
         self.socket.onData       = { [weak self] (data: Data) in self!.onData(data) }

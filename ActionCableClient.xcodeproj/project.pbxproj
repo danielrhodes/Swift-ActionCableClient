@@ -282,7 +282,7 @@
 				TargetAttributes = {
 					86D4510C1DC31840006A516E = {
 						CreatedOnToolsVersion = 8.0;
-						LastSwiftMigration = 0800;
+						LastSwiftMigration = 0910;
 						ProvisioningStyle = Automatic;
 					};
 					86D451321DC3189D006A516E = {
@@ -504,7 +504,8 @@
 				PRODUCT_NAME = ActionCableClient;
 				SKIP_INSTALL = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				SWIFT_VERSION = 3.0;
+				SWIFT_SWIFT3_OBJC_INFERENCE = Default;
+				SWIFT_VERSION = 4.0;
 			};
 			name = Debug;
 		};
@@ -525,7 +526,8 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.danielrhodes.ActionCableClient;
 				PRODUCT_NAME = ActionCableClient;
 				SKIP_INSTALL = YES;
-				SWIFT_VERSION = 3.0;
+				SWIFT_SWIFT3_OBJC_INFERENCE = Default;
+				SWIFT_VERSION = 4.0;
 			};
 			name = Release;
 		};
