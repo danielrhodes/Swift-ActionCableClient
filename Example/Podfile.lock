@@ -2,7 +2,7 @@ PODS:
   - ActionCableClient (0.2.3):
     - Starscream (~> 2.1.1)
   - SnapKit (3.2.0)
-  - Starscream (2.1.1)
+  - Starscream (3.0.2)
   - SwiftyJSON (3.1.4)
 
 DEPENDENCIES:
