@@ -3,8 +3,8 @@ use_frameworks!
 
 def common_pods
   pod 'ActionCableClient', :path => '../'
-  pod 'SwiftyJSON'
-  pod 'SnapKit'
+  pod 'SwiftyJSON', '~> 4.2.0'
+  pod 'SnapKit', '~> 4.2.0'
 end
 
 def common_test_pods
