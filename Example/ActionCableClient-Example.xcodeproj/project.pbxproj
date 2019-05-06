@@ -154,7 +154,6 @@
 				86D451531DC31BF9006A516E /* Frameworks */,
 				86D451541DC31BF9006A516E /* Resources */,
 				73670B087BDA56514C37256F /* [CP] Embed Pods Frameworks */,
-				54AE2864EEF206764C29DEB5 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -174,7 +173,6 @@
 				86D4517E1DC31D73006A516E /* Frameworks */,
 				86D4517F1DC31D73006A516E /* Resources */,
 				CB2674BAF940CAB39684678D /* [CP] Embed Pods Frameworks */,
-				44C432A26A1306534DDB0E9A /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -197,7 +195,7 @@
 				TargetAttributes = {
 					86D451551DC31BF9006A516E = {
 						CreatedOnToolsVersion = 8.0;
-						LastSwiftMigration = 0900;
+						LastSwiftMigration = 1010;
 						ProvisioningStyle = Automatic;
 					};
 					86D451801DC31D73006A516E = {
@@ -263,36 +261,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
-		};
-		44C432A26A1306534DDB0E9A /* [CP] Copy Pods Resources */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "[CP] Copy Pods Resources";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-ActionCableClient-Example-tvOS/Pods-ActionCableClient-Example-tvOS-resources.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		54AE2864EEF206764C29DEB5 /* [CP] Copy Pods Resources */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "[CP] Copy Pods Resources";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-ActionCableClient-Example-iOS/Pods-ActionCableClient-Example-iOS-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		714E8598059A7B374097B96E /* [CP] Check Pods Manifest.lock */ = {
@@ -524,8 +492,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "ActionCableClient-Example-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				SWIFT_SWIFT3_OBJC_INFERENCE = Default;
-				SWIFT_VERSION = 4.0;
+				SWIFT_VERSION = 4.2;
 			};
 			name = Debug;
 		};
@@ -541,8 +508,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "com.danielrhodes.ActionCableClient-Example-iOS";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "ActionCableClient-Example-Bridging-Header.h";
-				SWIFT_SWIFT3_OBJC_INFERENCE = Default;
-				SWIFT_VERSION = 4.0;
+				SWIFT_VERSION = 4.2;
 			};
 			name = Release;
 		};
@@ -557,7 +523,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "com.danielrhodes.ActionCableClient-Example-tvOS";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = appletvos;
-				SWIFT_VERSION = 3.0;
+				SWIFT_VERSION = 4.2;
 				TARGETED_DEVICE_FAMILY = 3;
 				TVOS_DEPLOYMENT_TARGET = 9.0;
 			};
@@ -574,7 +540,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "com.danielrhodes.ActionCableClient-Example-tvOS";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = appletvos;
-				SWIFT_VERSION = 3.0;
+				SWIFT_VERSION = 4.2;
 				TARGETED_DEVICE_FAMILY = 3;
 				TVOS_DEPLOYMENT_TARGET = 9.0;
 			};
