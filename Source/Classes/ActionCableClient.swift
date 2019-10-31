@@ -349,7 +349,15 @@ extension ActionCableClient {
     fileprivate func didDisconnect(_ error: Swift.Error?) {
         
         var attemptReconnect: Bool = true
+        var rejected: Bool = false
         var connectionError: ConnectionError?
+        
+        if let error = error as? WSError {
+            if error.type == Starscream.ErrorType.protocolError {
+                print("ActionCable connection rejected: \(error)")
+                rejected = true;
+            }
+        }
         
         let channels = self.channels
         for (_, channel) in channels {
@@ -364,7 +372,7 @@ extension ActionCableClient {
         }
         
         // Reconcile reconncetion attempt with manual disconnect
-        attemptReconnect = !manualDisconnectFlag && attemptReconnect
+        attemptReconnect = !manualDisconnectFlag && attemptReconnect && !rejected
         
         // disconnect() has not been called and error is
         // worthy of attempting a reconnect.
