@@ -74,7 +74,7 @@ open class ActionCableClient {
     open var headers : [String: String]? {
         get { return socket.request.allHTTPHeaderFields }
         set {
-            for (field, value) in headers ?? [:] {
+            for (field, value) in newValue ?? [:] {
                 socket.request.setValue(value, forHTTPHeaderField: field)
             }
         }
