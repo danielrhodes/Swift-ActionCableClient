@@ -491,12 +491,6 @@ extension ActionCableClient : CustomDebugStringConvertible {
     }
 }
 
-extension ActionCableClient : CustomPlaygroundQuickLookable {
-  public var customPlaygroundQuickLook: PlaygroundQuickLook {
-        return PlaygroundQuickLook.url(socket.currentURL.absoluteString)
-    }
-}
-
 extension ActionCableClient {
     func copyWithZone(_ zone: NSZone?) -> AnyObject! {
         assert(false, "This class doesn't implement NSCopying. ")
