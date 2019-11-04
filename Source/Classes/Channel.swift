@@ -188,7 +188,13 @@ open class Channel: Hashable, Equatable {
     internal var onReceiveActionHooks: [String: OnReceiveClosure] = Dictionary()
     internal unowned var client: ActionCableClient
     internal var actionBuffer: [Action] = Array()
-    public let hashValue: Int = Int(arc4random_uniform(UInt32(Int32.max)))
+    public var hashValue: Int {
+        return Int(arc4random_uniform(UInt32(Int32.max)))
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(hashValue)
+    }
 }
 
 public func ==(lhs: Channel, rhs: Channel) -> Bool {
@@ -233,6 +239,12 @@ extension Channel {
                 self.action(action.name, with: action.params)
             }
         })
+    }
+}
+
+extension Channel: CustomPlaygroundDisplayConvertible {
+    public var playgroundDescription: Any {
+        return name
     }
 }
 

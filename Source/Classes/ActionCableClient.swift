@@ -491,6 +491,12 @@ extension ActionCableClient : CustomDebugStringConvertible {
     }
 }
 
+extension ActionCableClient: CustomPlaygroundDisplayConvertible {
+    public var playgroundDescription: Any {
+        return socket.currentURL
+    }
+}
+
 extension ActionCableClient {
     func copyWithZone(_ zone: NSZone?) -> AnyObject! {
         assert(false, "This class doesn't implement NSCopying. ")
