@@ -13,7 +13,7 @@ Pod::Spec.new do |s|
   s.social_media_url = 'https://twitter.com/danielrhodes'
 
   s.pod_target_xcconfig = { 'SWIFT_VERSION' => '5' }
-  s.ios.deployment_target = '10.3'
+  s.ios.deployment_target = '10.0'
   s.tvos.deployment_target = '10.0'
   s.requires_arc = true
 
