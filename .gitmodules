@@ -1,6 +1,6 @@
 [submodule "Carthage/Checkouts/Starscream"]
 	path = Carthage/Checkouts/Starscream
-	url = https://github.com/daltoniam/Starscream
+	url = https://github.com/daltoniam/Starscream.git
 [submodule "Carthage/Checkouts/Quick"]
 	path = Carthage/Checkouts/Quick
 	url = https://github.com/Quick/Quick
