@@ -20,131 +20,140 @@
 //  USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-import UIKit
 import ActionCableClient
 import SnapKit
 import SwiftyJSON
-
+import UIKit
 
 class ChatViewController: UIViewController {
     static var MessageCellIdentifier = "MessageCell"
     static var ChannelIdentifier = "ChatChannel"
     static var ChannelAction = "talk"
-    
-    let client = ActionCableClient(url: URL(string:"wss://actioncable-echo.herokuapp.com/cable")!)
-  
+
+    let client = ActionCableClient(url: URL(string: "wss://actioncable-echo.herokuapp.com/cable")!)
+
     var channel: Channel?
-    
-    var history: Array<ChatMessage> = Array()
+
+    var history: [ChatMessage] = Array()
     var name: String?
-    
+
     var chatView: ChatView?
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+
         self.title = "Chat"
-        
-        chatView = ChatView(frame: view.bounds)
-        view.addSubview(chatView!)
-        
-        chatView?.snp.remakeConstraints({ (make) -> Void in
+
+        self.chatView = ChatView(frame: view.bounds)
+        view.addSubview(self.chatView!)
+
+        self.chatView?.snp.remakeConstraints({ (make) -> Void in
             make.top.bottom.left.right.equalTo(self.view)
         })
-        
-        chatView?.tableView.delegate = self
-        chatView?.tableView.dataSource = self
-        chatView?.tableView.separatorInset = UIEdgeInsets(top: 0.0, left: 0.0, bottom: 0.0, right: 0.0)
-        chatView?.tableView.allowsSelection = false
-        chatView?.tableView.register(ChatCell.self, forCellReuseIdentifier: ChatViewController.MessageCellIdentifier)
-        
-        chatView?.textField.delegate = self
-        
+
+        self.chatView?.tableView.delegate = self
+        self.chatView?.tableView.dataSource = self
+        self.chatView?.tableView.separatorInset = UIEdgeInsets(top: 0.0, left: 0.0, bottom: 0.0, right: 0.0)
+        self.chatView?.tableView.allowsSelection = false
+        self.chatView?.tableView.register(ChatCell.self, forCellReuseIdentifier: ChatViewController.MessageCellIdentifier)
+
+        self.chatView?.textField.delegate = self
+
         setupClient()
     }
-    
+
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        
-        let alert = UIAlertController(title: "Chat", message: "What's Your Name?", preferredStyle: UIAlertControllerStyle.alert)
-        
+
+        let alert = UIAlertController(title: "Chat", message: "What's Your Name?", preferredStyle: .alert)
+
         var nameTextField: UITextField?
-        alert.addTextField(configurationHandler: {(textField: UITextField!) in
+        alert.addTextField(configurationHandler: { (textField: UITextField!) in
             textField.placeholder = "Name"
-            //🙏 Forgive me father, for I have sinned. 🙏
+            // 🙏 Forgive me father, for I have sinned. 🙏
             nameTextField = textField
         })
-        
-        alert.addAction(UIAlertAction(title: "Start", style: UIAlertActionStyle.default) {(action: UIAlertAction) in
+
+        alert.addAction(UIAlertAction(title: "Start", style: UIAlertAction.Style.default) { (_: UIAlertAction) in
             self.name = nameTextField?.text
             self.chatView?.textField.becomeFirstResponder()
         })
-        
+
         self.present(alert, animated: true, completion: nil)
     }
 }
 
 // MARK: ActionCableClient
+
 extension ChatViewController {
-    
-    func setupClient() -> Void {
-      
-          self.client.willConnect = {
-              print("Will Connect")
-          }
-          
-          self.client.onConnected = {
-              print("Connected to \(self.client.url)")
-          }
-          
-          self.client.onDisconnected = {(error: ConnectionError?) in
+    func setupClient() {
+//        client.headers = ["Authorization": "Bearer SOME"]
+        self.client.willConnect = {
+            print("Will Connect")
+        }
+
+        self.client.onConnected = {
+            print("Connected to \(self.client.url)")
+            self.connectToChannel()
+        }
+
+        self.client.onDisconnected = { (error: ConnectionError?) in
             print("Disconected with error: \(String(describing: error))")
-          }
-          
-          self.client.willReconnect = {
-              print("Reconnecting to \(self.client.url)")
-              return true
-          }
-          
-          self.channel = client.create(ChatViewController.ChannelIdentifier)
-          self.channel?.onSubscribed = {
-              print("Subscribed to \(ChatViewController.ChannelIdentifier)")
-          }
-        
-          self.channel?.onReceive = {(data: Any?, error: Error?) in
+        }
+
+        self.client.willReconnect = {
+            print("Reconnecting to \(self.client.url)")
+            return true
+        }
+
+        self.client.connect()
+    }
+
+    func connectToChannel() {
+//        let channelParams = ["room_id": "sports-room"]
+        self.channel = client.create(ChatViewController.ChannelIdentifier, parameters: nil)
+        self.channel?.onSubscribed = {
+            print("💯 Subscribed to \(ChatViewController.ChannelIdentifier)")
+        }
+
+        self.channel?.onReceive = { (data: Any?, error: Error?) in
             if let error = error {
                 print(error.localizedDescription)
                 return
             }
-            
-            let JSONObject = JSON(data!)
-            let msg = ChatMessage(name: JSONObject["name"].string!, message: JSONObject["message"].string!)
+
+            guard
+                let realData = data as? [String: Any],
+                let name = realData["name"] as? String,
+                let message = realData["message"] as? String
+            else {
+                return
+            }
+
+            let msg = ChatMessage(name: name, message: message)
             self.history.append(msg)
             self.chatView?.tableView.reloadData()
-            
-            
+
             // Scroll to our new message!
-            if (msg.name == self.name) {
+            if msg.name == self.name {
                 let indexPath = IndexPath(row: self.history.count - 1, section: 0)
                 self.chatView?.tableView.scrollToRow(at: indexPath, at: .bottom, animated: false)
             }
         }
-        
-        self.client.connect()
     }
-    
+
     func sendMessage(_ message: String) {
         let prettyMessage = message.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
-        if (!prettyMessage.isEmpty) {
+        if !prettyMessage.isEmpty {
             print("Sending Message: \(ChatViewController.ChannelIdentifier)#\(ChatViewController.ChannelAction)")
             _ = self.channel?.action(ChatViewController.ChannelAction, with:
-              ["name": self.name!, "message": prettyMessage]
-            )
+                ["name": self.name!, "message": prettyMessage])
         }
     }
 }
 
-//MARK: UITextFieldDelegate
+// MARK: UITextFieldDelegate
+
 extension ChatViewController: UITextFieldDelegate {
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         self.sendMessage(textField.text!)
@@ -153,25 +162,26 @@ extension ChatViewController: UITextFieldDelegate {
     }
 }
 
-//MARK: UITableViewDelegate
+// MARK: UITableViewDelegate
+
 extension ChatViewController: UITableViewDelegate {
-    
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         let message = history[(indexPath as NSIndexPath).row]
         let attrString = message.attributedString()
-        let width = self.chatView?.tableView.bounds.size.width;
+        let width = self.chatView?.tableView.bounds.size.width
         let rect = attrString.boundingRect(with: CGSize(width: width! - (ChatCell.Inset * 2.0), height: CGFloat.greatestFiniteMagnitude),
-            options: [.usesLineFragmentOrigin, .usesFontLeading], context:nil)
+                                           options: [.usesLineFragmentOrigin, .usesFontLeading], context: nil)
         return rect.size.height + (ChatCell.Inset * 2.0)
     }
 }
 
-//MARK: UITableViewDataSource
+// MARK: UITableViewDataSource
+
 extension ChatViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return history.count
+        return self.history.count
     }
-    
+
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: ChatViewController.MessageCellIdentifier, for: indexPath) as! ChatCell
         let msg = history[(indexPath as NSIndexPath).row]
@@ -180,21 +190,22 @@ extension ChatViewController: UITableViewDataSource {
     }
 }
 
-//MARK: ChatMessage
+// MARK: ChatMessage
+
 struct ChatMessage {
     var name: String
     var message: String
-    
+
     func attributedString() -> NSAttributedString {
         let messageString: String = "\(self.name) \(self.message)"
-        let nameRange = NSRange(location: 0, length: self.name.characters.count)
-        let nonNameRange = NSRange(location: nameRange.length, length: messageString.characters.count - nameRange.length)
-        
+        let nameRange = NSRange(location: 0, length: self.name.count)
+        let nonNameRange = NSRange(location: nameRange.length, length: messageString.count - nameRange.length)
+
         let string: NSMutableAttributedString = NSMutableAttributedString(string: messageString)
-        string.addAttribute(NSAttributedStringKey.font,
-            value: UIFont.boldSystemFont(ofSize: 18.0),
-            range: nameRange)
-        string.addAttribute(NSAttributedStringKey.font, value: UIFont.systemFont(ofSize: 18.0), range: nonNameRange)
+        string.addAttribute(NSAttributedString.Key.font,
+                            value: UIFont.boldSystemFont(ofSize: 18.0),
+                            range: nameRange)
+        string.addAttribute(NSAttributedString.Key.font, value: UIFont.systemFont(ofSize: 18.0), range: nonNameRange)
         return string
     }
 }
