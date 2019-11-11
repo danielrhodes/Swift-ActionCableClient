@@ -23,105 +23,59 @@
 import Foundation
 
 internal class JSONSerializer {
-
     static let nonStandardMessageTypes: [MessageType] = [.ping, .welcome]
-  
-    static func serialize(_ channel : Channel, command: Command, data: ActionPayload?) throws -> String {
-        
+
+    static func serialize(_ channel: Channel, command: Command, data: ActionPayload?) throws -> String {
         do {
-            var identifierDict : ChannelIdentifier
-            if let identifier = channel.identifier {
-                identifierDict = identifier
-            } else {
-                identifierDict = Dictionary()
-            }
-            
-            identifierDict["channel"] = "\(channel.name)"
-            
-            let JSONData = try JSONSerialization.data(withJSONObject: identifierDict, options: JSONSerialization.WritingOptions(rawValue: 0))
-            guard let identifierString = NSString(data: JSONData, encoding: String.Encoding.utf8.rawValue)
-                  else { throw SerializationError.json }
-            
-            var commandDict = [
-                "command" : command.string,
-                "identifier" : identifierString
-            ] as [String : Any]
-            
-            if let _ = data {
-                let JSONData = try JSONSerialization.data(withJSONObject: data!, options: JSONSerialization.WritingOptions(rawValue: 0))
+            var commandDict: [String: Any] = [
+                "command": command.string,
+                "identifier": channel.identifier
+            ]
+
+            if let realData = data {
+                let JSONData = try JSONSerialization.data(withJSONObject: realData, options: JSONSerialization.WritingOptions(rawValue: 0))
                 guard let dataString = NSString(data: JSONData, encoding: String.Encoding.utf8.rawValue)
-                      else { throw SerializationError.json }
-                
+                else { throw SerializationError.json }
+
                 commandDict["data"] = dataString
             }
-            
+
             let CmdJSONData = try JSONSerialization.data(withJSONObject: commandDict, options: JSONSerialization.WritingOptions(rawValue: 0))
             guard let JSONString = NSString(data: CmdJSONData, encoding: String.Encoding.utf8.rawValue)
-                  else { throw SerializationError.json }
-            
+            else { throw SerializationError.json }
+
             return JSONString as String
         } catch {
             throw SerializationError.json
         }
     }
-    
+
     static func deserialize(_ string: String) throws -> Message {
-      
         do {
             guard let JSONData = string.data(using: String.Encoding.utf8) else { throw SerializationError.json }
 
-            guard let JSONObj = try JSONSerialization.jsonObject(with: JSONData, options: .allowFragments) as? Dictionary<String, AnyObject>
-              else { throw SerializationError.json }
-            
+            guard let JSONObj = try JSONSerialization.jsonObject(with: JSONData, options: .allowFragments) as? [String: AnyObject]
+            else { throw SerializationError.json }
+
             var messageType: MessageType = .unrecognized
             if let typeObj = JSONObj["type"], let typeString = typeObj as? String {
-              messageType = MessageType(string: typeString)
+                messageType = MessageType(string: typeString)
             }
-          
-            var channelName: String?
-            var channelIdentifier: String?
-            if let idObj = JSONObj["identifier"] {
-                var idJSON: Dictionary<String, AnyObject>
-                if let idString = idObj as? String {
-                    guard let JSONIdentifierData = idString.data(using: String.Encoding.utf8)
-                      else { throw SerializationError.json }
-                  
-                    if let JSON = try JSONSerialization.jsonObject(with: JSONIdentifierData, options: .allowFragments) as? Dictionary<String, AnyObject> {
-                        idJSON = JSON
-                    } else {
-                        throw SerializationError.json
-                    }
-                } else if let idJSONObj = idObj as? Dictionary<String, AnyObject> {
-                    idJSON = idJSONObj
-                } else {
-                    throw SerializationError.protocolViolation
-                }
-                
-                if let item = idJSON.first {
-                    channelIdentifier = item.value as? String
-                }
-                
-                if let nameStr = idJSON["channel"], let name = nameStr as? String {
-                  channelName = name
-                }
-                
-                if channelIdentifier != nil {
-                    channelName = channelIdentifier
-                }
-            }
-          
+
+            let channelName: String? = JSONObj["identifier"] as? String
+
             switch messageType {
             // Subscriptions
             case .confirmSubscription, .rejectSubscription, .cancelSubscription, .hibernateSubscription:
                 guard let _ = channelName
-                  else { throw SerializationError.protocolViolation }
-                
+                else { throw SerializationError.protocolViolation }
+
                 return Message(channelName: channelName,
-                               actionName:  nil,
+                               actionName: nil,
                                messageType: messageType,
                                data: nil,
                                error: nil)
-              
+
             // Welcome/Ping messages
             case .welcome, .ping:
                 return Message(channelName: nil,
@@ -130,38 +84,36 @@ internal class JSONSerializer {
                                data: nil,
                                error: nil)
             case .message, .unrecognized:
-                var messageActionName : String?
-                var messageValue      : AnyObject?
-                var messageError      : Swift.Error?
-                
+                var messageActionName: String?
+                var messageValue: AnyObject?
+                var messageError: Swift.Error?
+
                 do {
                     // No channel name was extracted from identifier
                     guard let _ = channelName
-                        else { throw SerializationError.protocolViolation }
-                    
+                    else { throw SerializationError.protocolViolation }
+
                     // No message was extracted from identifier
                     guard let messageObj = JSONObj["message"]
-                        else { throw SerializationError.protocolViolation }
-                    
+                    else { throw SerializationError.protocolViolation }
+
                     if let actionObj = messageObj["action"], let actionStr = actionObj as? String {
                         messageActionName = actionStr
                     }
-                    
+
                     messageValue = messageObj
                 } catch {
-                  messageError = error
+                    messageError = error
                 }
-                
+
                 return Message(channelName: channelName!,
                                actionName: messageActionName,
                                messageType: MessageType.message,
                                data: messageValue,
                                error: messageError)
-            
-          }
+            }
         } catch {
             throw error
         }
     }
-
 }
