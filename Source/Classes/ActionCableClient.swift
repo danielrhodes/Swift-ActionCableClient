@@ -216,7 +216,7 @@ extension ActionCableClient {
     /// - Returns: a Channel
 
     public func create(_ name: String) -> Channel {
-        let channel = create(name, identifier: nil, autoSubscribe: true, bufferActions: true)
+        let channel = create(name, parameters: nil, autoSubscribe: true, bufferActions: true)
         return channel
     }
 
@@ -228,28 +228,23 @@ extension ActionCableClient {
     ///     - autoSubscribe: Whether to automatically subscribe to the channel. Defaults to true.
     /// - Returns: a Channel
 
-    public func create(_ name: String, identifier: ChannelIdentifier?, autoSubscribe: Bool = true, bufferActions: Bool = true) -> Channel {
-        var channelUID = name
-
-        // if identifier isn't empty, fetch the first value as the channel unique identifier
-        if let dictionary = identifier?.first {
-            channelUID = dictionary.value as! String
-        }
+    public func create(_ name: String, parameters: ChannelParameters?, autoSubscribe: Bool = true, bufferActions: Bool = true) -> Channel {
+        let channelIdentifier = Channel.identifierFor(name: name, parameters: parameters)
 
         // Look in existing channels and return that
-        if let channel = channels[channelUID] { return channel }
+        if let channel = channels[channelIdentifier] { return channel }
 
         // Look in unconfirmed channels and return that
-        if let channel = unconfirmedChannels[channelUID] { return channel }
+        if let channel = unconfirmedChannels[channelIdentifier] { return channel }
 
         // Otherwise create a new one
         let channel = Channel(name: name,
-                              identifier: identifier,
+                              parameters: parameters,
                               client: self,
                               autoSubscribe: autoSubscribe,
                               shouldBufferActions: bufferActions)
 
-        unconfirmedChannels[channel.uid] = channel
+        unconfirmedChannels[channel.identifier] = channel
 
         if channel.autoSubscribe {
             subscribe(channel)
@@ -259,7 +254,7 @@ extension ActionCableClient {
     }
 
     public subscript(name: String) -> Channel {
-        let channel = create(name, identifier: nil, autoSubscribe: true, bufferActions: true)
+        let channel = create(name, parameters: nil, autoSubscribe: true, bufferActions: true)
         return channel
     }
 }
@@ -273,12 +268,12 @@ extension ActionCableClient {
 
     internal func subscribe(_ channel: Channel) {
         // Is it already added and subscribed?
-        if let existingChannel = channels[channel.uid], existingChannel == channel {
+        if let existingChannel = channels[channel.identifier], existingChannel == channel {
             debugPrint("[ActionCableClient] channel exists and subscribed to")
             return
         }
 
-        guard let channel = unconfirmedChannels[channel.uid]
+        guard let channel = unconfirmedChannels[channel.identifier]
         else { debugPrint("[ActionCableClient] Internal inconsistency error!"); return }
 
         do {
@@ -292,7 +287,7 @@ extension ActionCableClient {
         do {
             try transmit(on: channel, as: Command.unsubscribe)
 
-            let message = Message(channelName: channel.uid,
+            let message = Message(channelName: channel.identifier,
                                   actionName: nil,
                                   messageType: MessageType.cancelSubscription,
                                   data: nil,
@@ -354,7 +349,7 @@ extension ActionCableClient {
 
         let channels = self.channels
         for (_, channel) in channels {
-            let message = Message(channelName: channel.uid, actionName: nil, messageType: MessageType.hibernateSubscription, data: nil, error: nil)
+            let message = Message(channelName: channel.identifier, actionName: nil, messageType: MessageType.hibernateSubscription, data: nil, error: nil)
             onMessage(message)
         }
 
@@ -444,7 +439,7 @@ extension ActionCableClient {
             }
         case .confirmSubscription:
             if let channel = unconfirmedChannels.removeValue(forKey: message.channelName!) {
-                self.channels.updateValue(channel, forKey: channel.uid)
+                self.channels.updateValue(channel, forKey: channel.identifier)
 
                 // Notify Channel
                 channel.onMessage(message)
@@ -466,7 +461,7 @@ extension ActionCableClient {
         case .hibernateSubscription:
             if let channel = channels.removeValue(forKey: message.channelName!) {
                 // Add channel into unconfirmed channels
-                unconfirmedChannels[channel.uid] = channel
+                unconfirmedChannels[channel.identifier] = channel
 
                 // We want to treat this like an unsubscribe.
                 fallthrough
