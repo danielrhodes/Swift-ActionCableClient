@@ -22,7 +22,7 @@
 
 import Foundation
 
-public typealias ChannelIdentifier = ActionPayload
+public typealias ChannelParameters = ActionPayload
 public typealias OnReceiveClosure = ((Any?, Swift.Error?) -> Void)
 
 /// A particular channel on the server.
@@ -31,7 +31,7 @@ open class Channel: Hashable, Equatable {
     open var name: String
 
     /// Identifier
-    open var identifier: [String: Any]?
+    open var parameters: ChannelParameters?
 
     /// Auto-Subscribe to channel on initialization and re-connect?
     open var autoSubscribe: Bool
@@ -42,21 +42,11 @@ open class Channel: Hashable, Equatable {
 
     /// Subscribed
     open var isSubscribed: Bool {
-        return client.subscribed(uid)
+        return client.subscribed(identifier)
     }
 
-    /// Unique Identifier
-    open var uid: String {
-        // defaults to channel name
-        var channelUID = name
-
-        // if identifier isn't empty, fetch the first value as the channel unique identifier
-        if let dictionary = identifier?.first {
-            channelUID = dictionary.value as! String
-        }
-
-        return channelUID
-    }
+    /// Unique Channel Identifier
+    open var identifier: String
 
     /// A block called when a message has been received on this channel.
     ///
@@ -93,12 +83,30 @@ open class Channel: Hashable, Equatable {
     /// by the server.
     open var onRejected: (() -> Void)?
 
-    internal init(name: String, identifier: ChannelIdentifier?, client: ActionCableClient, autoSubscribe: Bool = true, shouldBufferActions: Bool = true) {
+    public static func identifierFor(name: String, parameters: ChannelParameters?) -> String {
+        var identifierDict = parameters ?? [:]
+        identifierDict["channel"] = name
+
+        // Try to Stringigy the channel parameters
+        do {
+            let JSONData = try JSONSerialization.data(withJSONObject: identifierDict, options: .prettyPrinted)
+            if let encodedString = NSString(data: JSONData, encoding: String.Encoding.utf8.rawValue) {
+                return encodedString as String
+            }
+        } catch (let error) {
+            print("\(error.localizedDescription)")
+        }
+        // return the Channel name if we failed
+        return name
+    }
+
+    internal init(name: String, parameters: ChannelParameters?, client: ActionCableClient, autoSubscribe: Bool = true, shouldBufferActions: Bool = true) {
         self.name = name
         self.client = client
         self.autoSubscribe = autoSubscribe
         self.shouldBufferActions = shouldBufferActions
-        self.identifier = identifier
+        self.parameters = parameters
+        identifier = Channel.identifierFor(name: name, parameters: parameters)
     }
 
     open func onReceive(_ action: String, handler: @escaping (OnReceiveClosure)) {
@@ -198,7 +206,7 @@ open class Channel: Hashable, Equatable {
 }
 
 public func ==(lhs: Channel, rhs: Channel) -> Bool {
-    return (lhs.hashValue == rhs.hashValue) && (lhs.uid == rhs.uid)
+    return (lhs.hashValue == rhs.hashValue) && (lhs.identifier == rhs.identifier)
 }
 
 extension Channel {
