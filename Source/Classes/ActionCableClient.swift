@@ -74,7 +74,7 @@ open class ActionCableClient {
     open var headers : [String: String]? {
         get { return socket.request.allHTTPHeaderFields }
         set {
-            for (field, value) in headers ?? [:] {
+            for (field, value) in newValue ?? [:] {
                 socket.request.setValue(value, forHTTPHeaderField: field)
             }
         }
@@ -229,9 +229,13 @@ extension ActionCableClient {
         var channelUID = name
         
         //if identifier isn't empty, fetch the first value as the channel unique identifier
-        if let dictionary = identifier?.first {
-            channelUID = dictionary.value as! String
+      if let dictionary = identifier, dictionary.count > 1 {
+        var identifier = name
+        for key in dictionary.keys.sorted() {
+          identifier += "-\(key):\(dictionary[key] as? String ?? "")"
         }
+        channelUID = identifier
+      }
 		
         // Look in existing channels and return that
         if let channel = channels[channelUID] { return channel }
@@ -429,7 +433,8 @@ extension ActionCableClient {
                     DispatchQueue.main.async(execute: callback)
                 }
             case .message:
-                if let channel = channels[message.channelName!] {
+                if let channelName = message.channelName,
+                  let channel = channels[channelName] {
                     // Notify Channel
                     channel.onMessage(message)
                     
@@ -438,7 +443,8 @@ extension ActionCableClient {
                     }
                 }
             case .confirmSubscription:
-                if let channel = unconfirmedChannels.removeValue(forKey: message.channelName!) {
+                if let channelName = message.channelName,
+                  let channel = unconfirmedChannels.removeValue(forKey: channelName) {
                     self.channels.updateValue(channel, forKey: channel.uid)
                     
                     // Notify Channel
@@ -491,10 +497,10 @@ extension ActionCableClient : CustomDebugStringConvertible {
     }
 }
 
-extension ActionCableClient : CustomPlaygroundQuickLookable {
-  public var customPlaygroundQuickLook: PlaygroundQuickLook {
-        return PlaygroundQuickLook.url(socket.currentURL.absoluteString)
-    }
+extension ActionCableClient : CustomPlaygroundDisplayConvertible {
+  public var playgroundDescription: Any {
+    return socket.currentURL
+  }
 }
 
 extension ActionCableClient {

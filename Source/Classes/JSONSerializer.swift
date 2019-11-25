@@ -96,16 +96,20 @@ internal class JSONSerializer {
                 } else {
                     throw SerializationError.protocolViolation
                 }
-                
-                if let item = idJSON.first {
-                    channelIdentifier = item.value as? String
-                }
-                
+
                 if let nameStr = idJSON["channel"], let name = nameStr as? String {
-                  channelName = name
+                    channelName = name
+
+                    if idJSON.count > 1 {
+                        var identifier = name
+                        for key in idJSON.keys.filter({ $0 != "channel" }).sorted() {
+                            identifier += "-\(key):\(idJSON[key] as? String ?? "")"
+                        }
+                        channelIdentifier = identifier
+                    }
                 }
-                
-                if channelIdentifier != nil {
+
+                if let channelIdentifier = channelIdentifier {
                     channelName = channelIdentifier
                 }
             }

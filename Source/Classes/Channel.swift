@@ -51,12 +51,16 @@ open class Channel: Hashable, Equatable {
         get {
             //defaults to channel name
             var channelUID = name
-            
+
             //if identifier isn't empty, fetch the first value as the channel unique identifier
-            if let dictionary = identifier?.first {
-                channelUID = dictionary.value as! String
+            if let dictionary = identifier, dictionary.count > 1 {
+                var identifier = name
+                for key in dictionary.keys.sorted() {
+                    identifier += "-\(key):\(dictionary[key] as? String ?? "")"
+                }
+                channelUID = identifier
             }
-            
+
             return channelUID
         }
     }
@@ -193,7 +197,11 @@ open class Channel: Hashable, Equatable {
     internal var onReceiveActionHooks: Dictionary<String, OnReceiveClosure> = Dictionary()
     internal unowned var client: ActionCableClient
     internal var actionBuffer: Array<Action> = Array()
-    open let hashValue: Int = Int(arc4random_uniform(UInt32(Int32.max)))
+//    public let hashValue: Int = Int(arc4random_uniform(UInt32(Int32.max)))
+
+  public func hash(into hasher: inout Hasher) {
+    hasher.combine( Int(arc4random_uniform(UInt32(Int32.max))) )
+  }
 }
 
 public func ==(lhs: Channel, rhs: Channel) -> Bool {
@@ -259,12 +267,12 @@ extension Channel: CustomDebugStringConvertible {
     }
 }
 
-extension Channel: CustomPlaygroundQuickLookable {
+extension Channel: CustomPlaygroundDisplayConvertible {
     /// A custom playground quick look for this instance.
     ///
     /// If this type has value semantics, the `PlaygroundQuickLook` instance
     /// should be unaffected by subsequent mutations.
-    public var customPlaygroundQuickLook: PlaygroundQuickLook {
-              return PlaygroundQuickLook.text(self.name)
-    }
+  public var playgroundDescription: Any {
+    return self.name
+  }
 }

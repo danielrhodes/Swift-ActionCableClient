@@ -21,6 +21,7 @@
 //
 
 import Foundation
+import Starscream
 
 enum SerializationError : Swift.Error {
     case json
@@ -67,7 +68,14 @@ public enum ConnectionError : Swift.Error {
     }
   
     init(from error: Swift.Error) {
-      switch error._code {
+      let error_code: Int
+      if let ws_error = error as? WSError {
+        error_code = ws_error.code
+      } else {
+        error_code = error._code
+      }
+      
+      switch error_code {
       case 2: self = ConnectionError.unknownDomain(error)
       case 61: self = ConnectionError.refused(error)
       case 404: self = ConnectionError.notFound(error)

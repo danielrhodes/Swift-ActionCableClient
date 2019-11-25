@@ -66,7 +66,7 @@ class ChatViewController: UIViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         
-        let alert = UIAlertController(title: "Chat", message: "What's Your Name?", preferredStyle: UIAlertControllerStyle.alert)
+        let alert = UIAlertController(title: "Chat", message: "What's Your Name?", preferredStyle: UIAlertController.Style.alert)
         
         var nameTextField: UITextField?
         alert.addTextField(configurationHandler: {(textField: UITextField!) in
@@ -75,7 +75,7 @@ class ChatViewController: UIViewController {
             nameTextField = textField
         })
         
-        alert.addAction(UIAlertAction(title: "Start", style: UIAlertActionStyle.default) {(action: UIAlertAction) in
+        alert.addAction(UIAlertAction(title: "Start", style: UIAlertAction.Style.default) {(action: UIAlertAction) in
             self.name = nameTextField?.text
             self.chatView?.textField.becomeFirstResponder()
         })
@@ -187,14 +187,14 @@ struct ChatMessage {
     
     func attributedString() -> NSAttributedString {
         let messageString: String = "\(self.name) \(self.message)"
-        let nameRange = NSRange(location: 0, length: self.name.characters.count)
-        let nonNameRange = NSRange(location: nameRange.length, length: messageString.characters.count - nameRange.length)
+        let nameRange = NSRange(location: 0, length: self.name.count)
+        let nonNameRange = NSRange(location: nameRange.length, length: messageString.count - nameRange.length)
         
         let string: NSMutableAttributedString = NSMutableAttributedString(string: messageString)
-        string.addAttribute(NSAttributedStringKey.font,
+        string.addAttribute(NSAttributedString.Key.font,
             value: UIFont.boldSystemFont(ofSize: 18.0),
             range: nameRange)
-        string.addAttribute(NSAttributedStringKey.font, value: UIFont.systemFont(ofSize: 18.0), range: nonNameRange)
+        string.addAttribute(NSAttributedString.Key.font, value: UIFont.systemFont(ofSize: 18.0), range: nonNameRange)
         return string
     }
 }
