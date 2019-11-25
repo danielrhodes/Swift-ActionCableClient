@@ -433,7 +433,8 @@ extension ActionCableClient {
                     DispatchQueue.main.async(execute: callback)
                 }
             case .message:
-                if let channel = channels[message.channelName!] {
+                if let channelName = message.channelName,
+                  let channel = channels[channelName] {
                     // Notify Channel
                     channel.onMessage(message)
                     
@@ -442,7 +443,8 @@ extension ActionCableClient {
                     }
                 }
             case .confirmSubscription:
-                if let channel = unconfirmedChannels.removeValue(forKey: message.channelName!) {
+                if let channelName = message.channelName,
+                  let channel = unconfirmedChannels.removeValue(forKey: channelName) {
                     self.channels.updateValue(channel, forKey: channel.uid)
                     
                     // Notify Channel
@@ -495,10 +497,10 @@ extension ActionCableClient : CustomDebugStringConvertible {
     }
 }
 
-extension ActionCableClient : CustomPlaygroundQuickLookable {
-  public var customPlaygroundQuickLook: PlaygroundQuickLook {
-        return PlaygroundQuickLook.url(socket.currentURL.absoluteString)
-    }
+extension ActionCableClient : CustomPlaygroundDisplayConvertible {
+  public var playgroundDescription: Any {
+    return socket.currentURL
+  }
 }
 
 extension ActionCableClient {
