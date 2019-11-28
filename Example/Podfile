@@ -1,6 +1,8 @@
 source 'https://github.com/CocoaPods/Specs.git'
 use_frameworks!
 
+platform :ios, '10.0'
+
 def common_pods
   pod 'ActionCableClient', :path => '../'
   pod 'SwiftyJSON'
@@ -17,5 +19,5 @@ target 'ActionCableClient-Example-iOS' do
 end
 
 target 'ActionCableClient-Example-tvOS' do
-    common_pods
+   # common_pods
 end

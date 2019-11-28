@@ -1,25 +1,31 @@
 PODS:
-  - ActionCableClient (0.2.3):
-    - Starscream (~> 2.1.1)
-  - SnapKit (3.2.0)
-  - Starscream (2.1.1)
-  - SwiftyJSON (3.1.4)
+  - ActionCableClient (0.2.5):
+    - Starscream (~> 3.1.1)
+  - SnapKit (5.0.1)
+  - Starscream (3.1.1)
+  - SwiftyJSON (5.0.0)
 
 DEPENDENCIES:
   - ActionCableClient (from `../`)
   - SnapKit
   - SwiftyJSON
 
+SPEC REPOS:
+  https://github.com/CocoaPods/Specs.git:
+    - SnapKit
+    - Starscream
+    - SwiftyJSON
+
 EXTERNAL SOURCES:
   ActionCableClient:
-    :path: ../
+    :path: "../"
 
 SPEC CHECKSUMS:
-  ActionCableClient: b292c0cb95490f0a5d417729b8052764b1d6babe
-  SnapKit: 1ca44df72cfa543218d177cb8aab029d10d86ea7
-  Starscream: 142bd8ef24592d985daee9fa48c936070b85b15f
-  SwiftyJSON: c2842d878f95482ffceec5709abc3d05680c0220
+  ActionCableClient: c6d31cf05a937ded173ee8cd6a7ec0fdb8984af8
+  SnapKit: 97b92857e3df3a0c71833cce143274bf6ef8e5eb
+  Starscream: 4bb2f9942274833f7b4d296a55504dcfc7edb7b0
+  SwiftyJSON: 36413e04c44ee145039d332b4f4e2d3e8d6c4db7
 
-PODFILE CHECKSUM: dbc0283d807753c3c71ad17b82e66d2742059690
+PODFILE CHECKSUM: 6a7061b5dfebab0d1c33f86b963813f3cf3aa980
 
-COCOAPODS: 1.3.1
+COCOAPODS: 1.8.0
