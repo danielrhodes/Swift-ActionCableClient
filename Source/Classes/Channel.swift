@@ -83,11 +83,14 @@ open class Channel: Hashable, Equatable {
     /// by the server.
     open var onRejected: (() -> Void)?
 
+    /// Generate a unique identifier by merging Channel Name and Parameters
     public static func identifierFor(name: String, parameters: ChannelParameters?) -> String {
-        var identifierDict = parameters ?? [:]
+        var identifierDict: ChannelParameters = parameters ?? [:]
         identifierDict["channel"] = name
+        // Sort identifier to avoid sorting conflicts
+        identifierDict = ChannelParameters(uniqueKeysWithValues: identifierDict.sorted(by: { $0.key > $1.key }))
 
-        // Try to Stringigy the channel parameters
+        // Try to Stringify the channel parameters
         do {
             let JSONData = try JSONSerialization.data(withJSONObject: identifierDict, options: .prettyPrinted)
             if let encodedString = NSString(data: JSONData, encoding: String.Encoding.utf8.rawValue) {

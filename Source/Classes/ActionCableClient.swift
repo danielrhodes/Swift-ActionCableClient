@@ -230,7 +230,7 @@ extension ActionCableClient {
 
     public func create(_ name: String, parameters: ChannelParameters?, autoSubscribe: Bool = true, bufferActions: Bool = true) -> Channel {
         let channelIdentifier = Channel.identifierFor(name: name, parameters: parameters)
-
+        debugPrint(channelIdentifier)
         // Look in existing channels and return that
         if let channel = channels[channelIdentifier] { return channel }
 

@@ -110,8 +110,8 @@ extension ChatViewController {
     }
 
     func connectToChannel() {
-//        let channelParams = ["room_id": "sports-room"]
-        self.channel = client.create(ChatViewController.ChannelIdentifier, parameters: nil)
+        let channelParams = ["room_id": "sports-room"]
+        self.channel = client.create(ChatViewController.ChannelIdentifier, parameters: channelParams)
         self.channel?.onSubscribed = {
             print("💯 Subscribed to \(ChatViewController.ChannelIdentifier)")
         }
